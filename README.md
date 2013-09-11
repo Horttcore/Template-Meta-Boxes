@@ -24,3 +24,8 @@ Display meta boxes depending on the selected template
 
 	$Template_Boxes = Template_Meta_Boxes::get_instance();
 	$Template_Boxes->add_meta_box( 'default', 'postimagediv', 'page', 'side' );
+	
+### What are the parameters?
+
+	$Template_Boxes->add_meta_box( $template_name, $meta_box_id, $post_type, $context );
+	$Template_Boxes->remove_meta_box( $template_name, $meta_box_id, $post_type, $context );
