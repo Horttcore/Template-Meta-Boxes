@@ -16,11 +16,11 @@ Display meta boxes depending on the selected template
 * Add or remove meta boxes in your `functions.php`
 
 ### Remove the post thumbnail meta box for the default page template
-
-`$Template_Boxes = Template_Meta_Boxes::get_instance();
-$Template_Boxes->remove_meta_box( 'default', 'postimagediv', 'page', 'side' );`
+	
+	$Template_Boxes = Template_Meta_Boxes::get_instance();
+	$Template_Boxes->remove_meta_box( 'default', 'postimagediv', 'page', 'side' );
 
 ### Add the post thumbnail meta box only for the default page template
 
-`$Template_Boxes = Template_Meta_Boxes::get_instance();
-$Template_Boxes->add_meta_box( 'default', 'postimagediv', 'page', 'side' );`
+	$Template_Boxes = Template_Meta_Boxes::get_instance();
+	$Template_Boxes->add_meta_box( 'default', 'postimagediv', 'page', 'side' );
