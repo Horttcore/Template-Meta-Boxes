@@ -29,3 +29,9 @@ Display meta boxes depending on the selected template
 
 	$Template_Boxes->add_meta_box( $template_name, $meta_box_id, $post_type, $context );
 	$Template_Boxes->remove_meta_box( $template_name, $meta_box_id, $post_type, $context );
+	
+## FAQ
+
+### I changed the template but nothing happens
+
+Did you save the post? As for the moment it's a php solution, but I might change it in a future to work instantly.
