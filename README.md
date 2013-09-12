@@ -35,3 +35,13 @@ Display meta boxes depending on the selected template
 ### I changed the template but nothing happens
 
 Did you save the post? As for the moment it's a php solution, but I might change it in a future to work instantly.
+
+## Changelog
+
+### v1.1
+
+* Use 'advanced' as default context
+
+### v1.0
+
+* Initial release
