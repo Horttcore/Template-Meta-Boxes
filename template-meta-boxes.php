@@ -3,7 +3,7 @@
 Plugin Name: Template Meta Boxes
 Plugin URI: http://horttcore.de
 Description: Display meta boxes depending on the selected template
-Version: 1.0
+Version: 1.1
 Author: Ralf Hortt
 Author URI: http://horttcore.de
 License: GPL2
@@ -41,6 +41,7 @@ class Template_Meta_Boxes
 	/**
 	 * Contstructor
 	 *
+	 * @access public
 	 * @since v1.0
 	 * @author Ralf Hortt
 	 */
@@ -50,15 +51,17 @@ class Template_Meta_Boxes
 	}
 
 
+
 	/**
 	 * Add a meta box for a special template
 	 *
+	 * @access public
 	 * @param str $template_name Template name
 	 * @param str $meta_box_id Meta Box ID
 	 * @since v1.0
 	 * @author Ralf Hortt
 	 */
-	public function add_meta_box( $template_name, $meta_box_id, $page, $context )
+	public function add_meta_box( $template_name, $meta_box_id, $page, $context = 'advanced' )
 	{
 
 		$this->add_meta_boxes[$template_name][] = array( 'id' => $meta_box_id, 'page' => $page, 'context' => $context );
@@ -67,7 +70,15 @@ class Template_Meta_Boxes
 
 
 
-	public function add_template_meta_boxes( $current_template )
+	/**
+	 * Filter to add a certain meta box only for a specific template
+	 *
+	 * @access protected
+	 * @param str $current_template Current template
+	 * @since v1.0
+	 * @author Ralf Hortt
+	 */
+	protected function add_template_meta_boxes( $current_template )
 	{
 
 		global $wp_meta_boxes, $post;
@@ -97,6 +108,15 @@ class Template_Meta_Boxes
 	} // end add_template_meta_boxes
 
 
+
+
+	/**
+	 * Filter the meta boxes
+	 *
+	 * @access public
+	 * @since v1.0
+	 * @author Ralf Hortt
+	 */
 	public function do_meta_boxes()
 	{
 
@@ -117,50 +137,52 @@ class Template_Meta_Boxes
 
 
 	/**
-    * Creates or returns an instance of this class.
-    *
-    * @return  Foo A single instance of this class.
-    */
-   public static function get_instance() {
+	 * Creates or returns an instance of this class.
+	 *
+	 * @static
+	 * @access public
+	 * @return obj A single instance of this class.
+	 */
+	public static function get_instance() {
 
 		if ( null == self::$instance )
 			self::$instance = new self;
 
 		return self::$instance;
 
-   } // end get_instance;
+	} // end get_instance;
 
 
 
-   /**
-    * Rempve a meta box for a special template
-    *
-    * @access protected
-    * @param int $post_id Post ID
-    * @return str Template ID
-    * @since v1.0
-    * @author Ralf Hortt
-    */
-   protected function get_template( $post_id )
-   {
+	/**
+	 * Rempve a meta box for a special template
+	 *
+	 * @access protected
+	 * @param int $post_id Post ID
+	 * @return str Template ID
+	 * @since v1.0
+	 * @author Ralf Hortt
+	 */
+	protected function get_template( $post_id )
+	{
 
-   		return get_post_meta( $post_id, '_wp_page_template', TRUE );
+		return get_post_meta( $post_id, '_wp_page_template', TRUE );
 
-   } // end get_template
+	} // end get_template
 
 
 
-   /**
-    * Rempve a meta box for a special template
-    *
-    * @access public
-    * @param str $template_name Template name
-    * @param str $meta_box_id Meta Box ID
-    * @param str $context Context
-    * @since v1.0
-    * @author Ralf Hortt
-    */
-	public function remove_meta_box( $template_name, $meta_box_id, $page, $context )
+	/**
+	 * Rempve a meta box for a special template
+	 *
+	 * @access public
+	 * @param str $template_name Template name
+	 * @param str $meta_box_id Meta Box ID
+	 * @param str $context Context
+	 * @since v1.0
+	 * @author Ralf Hortt
+	 */
+	public function remove_meta_box( $template_name, $meta_box_id, $page, $context = 'advanced' )
 	{
 
 		$this->remove_meta_boxes[$template_name][] = array( 'id' => $meta_box_id, 'page' => $page, 'context' => $context );
@@ -172,12 +194,12 @@ class Template_Meta_Boxes
 	/**
 	 * Remove meta boxes
 	 *
-	 * @access public
+	 * @access protected
 	 * @param str $current_template Current template id
 	 * @since v1.0
 	 * @author Ralf Hortt
 	 **/
-	private function remove_template_meta_boxes( $current_template )
+	protected function remove_template_meta_boxes( $current_template )
 	{
 
 		if ( !$this->remove_meta_boxes || !isset( $this->remove_meta_boxes[$current_template] ) || empty( $this->remove_meta_boxes[$current_template] ) )
@@ -196,5 +218,3 @@ class Template_Meta_Boxes
 }
 
 $Template_Boxes = Template_Meta_Boxes::get_instance();
-$Template_Boxes = Template_Meta_Boxes::get_instance();
-$Template_Boxes->add_meta_box( 'default', 'postimagediv', 'page', 'side' );
