@@ -1,4 +1,4 @@
-Template-Meta-Boxes
+Template Meta Boxes
 ===================
 
 ## Description
@@ -12,7 +12,7 @@ Display meta boxes depending on the selected template
 
 ## Usage
 
-* Register any meta box as usual with the WorPress API ( http://codex.wordpress.org/Function_Reference/add_meta_box )
+* Register any meta box as usual with the WorPress API ( [add_meta_box](http://codex.wordpress.org/Function_Reference/add_meta_box) )
 * Add or remove meta boxes in your `functions.php`
 
 ### Remove the post thumbnail meta box for the default page template
