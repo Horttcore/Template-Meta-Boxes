@@ -3,7 +3,7 @@
 Plugin Name: Template Meta Boxes
 Plugin URI: http://horttcore.de
 Description: Display meta boxes depending on the selected template
-Version: 1.1
+Version: 1.2
 Author: Ralf Hortt
 Author URI: http://horttcore.de
 License: GPL2
@@ -47,8 +47,10 @@ class Template_Meta_Boxes
 	 */
 	public function __construct()
 	{
+
 		add_action( 'do_meta_boxes', array( $this, 'do_meta_boxes' ) );
-	}
+
+	} // end __construct
 
 
 
@@ -215,6 +217,4 @@ class Template_Meta_Boxes
 
 
 
-}
-
-$Template_Boxes = Template_Meta_Boxes::get_instance();
+} // end Template_Meta_Boxes
