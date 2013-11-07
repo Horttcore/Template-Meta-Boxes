@@ -1,4 +1,4 @@
-Template-Meta-Boxes
+Template Meta Boxes
 ===================
 
 ## Description
@@ -7,28 +7,31 @@ Display meta boxes depending on the selected template
 
 ## Installation
 
-* Put the plugin file in your plugin directory and activate it in your WP backend.
-* or ship the file within your theme
+* I recommend to ship this file within your template as an include
+* Or put the plugin file in your plugin directory and activate it in your WP backend.
 
 ## Usage
 
-* Register any meta box as usual with the [WorPress API](http://codex.wordpress.org/Function_Reference/add_meta_box)
+* Register any meta box as usual with the WordPress API ( [Codex](http://codex.wordpress.org/Function_Reference/add_meta_box) )
 * Add or remove meta boxes in your `functions.php`
 
 ### Remove the post thumbnail meta box for the default page template
 
-	$Template_Boxes = Template_Meta_Boxes::get_instance();
-	$Template_Boxes->remove_meta_box( 'default', 'postimagediv', 'page', 'side' );
+<pre class="language-php"><code class="language-php">$Template_Boxes = Template_Meta_Boxes::get_instance();
+$Template_Boxes->remove_meta_box( 'default', 'postimagediv', 'page', 'side' );
+</code></pre>
 
 ### Add the post thumbnail meta box only for the default page template
 
-	$Template_Boxes = Template_Meta_Boxes::get_instance();
-	$Template_Boxes->add_meta_box( 'default', 'postimagediv', 'page', 'side' );
+<pre class="language-php"><code class="language-php">$Template_Boxes = Template_Meta_Boxes::get_instance();
+$Template_Boxes->add_meta_box( 'default', 'postimagediv', 'page', 'side' );
+</code></pre>
 
 ### What are the parameters?
 
-	$Template_Boxes->add_meta_box( $template_name, $meta_box_id, $post_type, $context );
-	$Template_Boxes->remove_meta_box( $template_name, $meta_box_id, $post_type, $context );
+<pre class="language-php"><code class="language-php">$Template_Boxes->add_meta_box( $template_name, $meta_box_id, $post_type, $context );
+$Template_Boxes->remove_meta_box( $template_name, $meta_box_id, $post_type, $context );
+</code></pre>
 
 ## FAQ
 
@@ -38,7 +41,7 @@ Did you save the post? As for the moment it's a php solution, but I might change
 
 ## Changelog
 
-### v1.2
+### v1.1.1
 
 * Code cleanup
 
