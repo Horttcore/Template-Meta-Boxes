@@ -3,7 +3,7 @@
 Plugin Name: Template Meta Boxes
 Plugin URI: http://horttcore.de
 Description: Display meta boxes depending on the selected template
-Version: 1.1.1
+Version: 1.2
 Author: Ralf Hortt
 Author URI: http://horttcore.de
 License: GPL2
@@ -48,7 +48,7 @@ class Template_Meta_Boxes
 	public function __construct()
 	{
 
-		add_action( 'do_meta_boxes', array( $this, 'do_meta_boxes' ) );
+		add_action( 'do_meta_boxes', array( $this, 'do_meta_boxes' ), 10, 3 );
 
 	} // end __construct
 
@@ -58,15 +58,28 @@ class Template_Meta_Boxes
 	 * Add a meta box for a special template
 	 *
 	 * @access public
-	 * @param str $template_name Template name
+	 * @param str|array $conditions Conditions to check against
 	 * @param str $meta_box_id Meta Box ID
+	 * @param str|array $post_type Post type - default 'any'
+	 * @param str $context Meta box context
 	 * @since v1.0
 	 * @author Ralf Hortt
 	 */
-	public function add_meta_box( $template_name, $meta_box_id, $page, $context = 'advanced' )
+	public function add_meta_box( $conditions, $meta_box_id, $post_type = 'any', $context = FALSE )
 	{
 
-		$this->add_meta_boxes[$template_name][] = array( 'id' => $meta_box_id, 'page' => $page, 'context' => $context );
+		$post_type = ( 'any' == $post_type ) ? get_post_types() : $post_type;
+		$post_type = ( !is_array( $post_type ) ) ? array( $post_type ) : $post_type;
+		$context = ( FALSE !== $context ) ? $context : $this->get_meta_box_context( $meta_box_id );
+
+		if ( FALSE === $context )
+			return;
+
+		if ( is_array( $conditions ) && !empty( $conditions ) ) :
+			$this->add_meta_boxes[$context][] = array( 'id' => $meta_box_id, 'post_type' => $post_type, 'conditions' => $conditions );
+		else :
+			$this->add_meta_boxes[$context][] = array( 'id' => $meta_box_id, 'post_type' => $post_type, 'conditions' => array( 'template' => $conditions ) );
+		endif;
 
 	} // end add_meta_box
 
@@ -76,34 +89,43 @@ class Template_Meta_Boxes
 	 * Filter to add a certain meta box only for a specific template
 	 *
 	 * @access protected
-	 * @param str $current_template Current template
+	 * @param str $post_type Post Type
+	 * @param str $context Meta box context
+	 * @param obj $post Post object
 	 * @since v1.0
 	 * @author Ralf Hortt
 	 */
-	protected function add_template_meta_boxes( $current_template )
+	protected function add_template_meta_boxes( $post_type, $context, $post )
 	{
 
-		global $wp_meta_boxes, $post;
-
-		if ( !$wp_meta_boxes || empty( $this->add_meta_boxes ) || !$post )
+		// Skip if wrong context
+		if ( !isset( $this->add_meta_boxes[$context] ) || empty( $this->add_meta_boxes[$context] ) )
 			return;
 
-		foreach ( $this->add_meta_boxes as $template => $meta_boxes ) :
+		// Loop through meta boxes
+		foreach ( $this->add_meta_boxes[$context] as $meta_box ) :
 
-			foreach ( $meta_boxes as $key => $meta_box ) :
+			$remove = FALSE;
 
-				if ( $current_template == $template || !isset( $wp_meta_boxes[$meta_box['page']][$meta_box['context']] ) )
-					break;
+			// Remove if wrong post type
+			if ( !in_array( $post_type, $meta_box['post_type'] ) )
+				$remove = TRUE;
 
-				if (
-						isset( $wp_meta_boxes[$meta_box['page']][$meta_box['context']]['core'][$meta_box['id']] ) ||
-						isset( $wp_meta_boxes[$meta_box['page']][$meta_box['context']]['default'][$meta_box['id']] ) ||
-						isset( $wp_meta_boxes[$meta_box['page']][$meta_box['context']]['high'][$meta_box['id']] ) ||
-						isset( $wp_meta_boxes[$meta_box['page']][$meta_box['context']]['low'][$meta_box['id']] )
-				)
-					remove_meta_box( $meta_box['id'], $meta_box['page'], $meta_box['context'] );
+			// Remove if conditions fail
+			foreach ( $meta_box['conditions'] as $key => $value ) :
+
+				if ( 'template' == $key && $value != $this->get_template( $post->ID ) )
+					$remove = TRUE;
+				elseif ( 'post_format' == $key && $value != get_post_format( $post->ID ) ) 
+					$remove = TRUE;
+				elseif ( get_post_field( $key, $post->ID ) != $value )
+					$remove = TRUE;
 
 			endforeach;
+
+			// Remove meta box
+			if ( TRUE === $remove )
+				remove_meta_box( $meta_box['id'], $post_type, $context );
 
 		endforeach;
 
@@ -116,23 +138,22 @@ class Template_Meta_Boxes
 	 * Filter the meta boxes
 	 *
 	 * @access public
+	 * @param str $post_type Post type
+	 * @param str $context Context
+	 * @param obj $post Post object
 	 * @since v1.0
 	 * @author Ralf Hortt
 	 */
-	public function do_meta_boxes()
+	public function do_meta_boxes( $post_type, $context, $post )
 	{
-
-		global $post;
 
 		$screen = get_current_screen();
 
 		if ( !$screen || 'post' != $screen->base )
 			return;
 
-		$template_name = ( $post->ID ) ? $this->get_template( $post->ID ) : 'default';
-
-		$this->remove_template_meta_boxes( $template_name);
-		$this->add_template_meta_boxes( $template_name );
+		$this->remove_template_meta_boxes( $post_type, $context, $post );
+		$this->add_template_meta_boxes( $post_type, $context, $post );
 
 	} // end do_meta_boxes
 
@@ -153,6 +174,55 @@ class Template_Meta_Boxes
 		return self::$instance;
 
 	} // end get_instance;
+
+
+
+	/**
+	 * Get meta box context
+	 *
+	 * @access protected
+	 * @param str $meta_box_id Meta box ID
+	 * @return str Meta box context
+	 * @since v1.2
+	 * @author Ralf Hortt
+	 **/
+	protected function get_meta_box_context( $meta_box_id )
+	{
+
+		if ( is_tax( str_replace( 'div', '', $meta_box_id ) ) || is_category( str_replace( 'div', '', $meta_box_id ) ) ||	is_tag( str_replace( 'div', '', $meta_box_id ) ) )
+			$meta_box_id = 'taxonomy';
+
+		switch ( $meta_box_id ) :
+
+			case 'taxonomy' :
+			case 'submitdiv' : 
+			case 'formatdiv' : 
+			case 'pageparentdiv' : 
+			case 'postimagediv' : 
+				$context = 'side';
+				break;
+
+			case 'revisionsdiv' : 
+			case 'attachment-id3' : 
+			case 'postexcerpt' : 
+			case 'trackbacksdiv' : 
+			case 'postcustom' : 
+			case 'commentstatusdiv' : 
+			case 'commentsdiv' : 
+			case 'slugdiv' : 
+			case 'authordiv' : 
+				$context = 'normal';
+				break;
+
+			default :
+				$context = FALSE;
+				break;
+
+		endswitch;
+
+		return $context;
+
+	} // end get_meta_box_context
 
 
 
@@ -178,16 +248,30 @@ class Template_Meta_Boxes
 	 * Rempve a meta box for a special template
 	 *
 	 * @access public
-	 * @param str $template_name Template name
+	 * @param str/array $condition Conditions
 	 * @param str $meta_box_id Meta Box ID
+	 * @param str|array $post_type Post type - empty means all post types
 	 * @param str $context Context
 	 * @since v1.0
 	 * @author Ralf Hortt
 	 */
-	public function remove_meta_box( $template_name, $meta_box_id, $page, $context = 'advanced' )
+	public function remove_meta_box( $conditions, $meta_box_id, $post_type = 'any', $context = FALSE )
 	{
 
-		$this->remove_meta_boxes[$template_name][] = array( 'id' => $meta_box_id, 'page' => $page, 'context' => $context );
+		$post_type = ( 'any' == $post_type ) ? get_post_types() : $post_type;
+		$post_type = ( !is_array( $post_type ) ) ? array( $post_type ) : $post_type;
+		$context = ( FALSE !== $context ) ? $context : $this->get_meta_box_context( $meta_box_id );
+
+		if ( FALSE === $context )
+			return;
+		
+		// Extended condition
+		if ( is_array( $conditions ) && !empty( $conditions ) ) :
+			$this->remove_meta_boxes[$context][] = array( 'id' => $meta_box_id, 'post_type' => $post_type, 'conditions' => $conditions );
+		// Template condition
+		else :
+			$this->remove_meta_boxes[$context][] = array( 'id' => $meta_box_id, 'post_type' => $post_type, 'conditions' => array( 'template' => $conditions ) );
+		endif;
 
 	} // end remove_meta_box
 
@@ -197,19 +281,48 @@ class Template_Meta_Boxes
 	 * Remove meta boxes
 	 *
 	 * @access protected
-	 * @param str $current_template Current template id
+	 * @param str $post_type Post Type
+	 * @param str $context Meta box context
+	 * @param obj $post Post object	
 	 * @since v1.0
 	 * @author Ralf Hortt
 	 **/
-	protected function remove_template_meta_boxes( $current_template )
+	protected function remove_template_meta_boxes( $post_type, $context, $post )
 	{
 
-		if ( !$this->remove_meta_boxes || !isset( $this->remove_meta_boxes[$current_template] ) || empty( $this->remove_meta_boxes[$current_template] ) )
+		// Skip if wrong context
+		if ( !isset( $this->remove_meta_boxes[$context] ) || empty( $this->remove_meta_boxes[$context] ) )
 			return;
 
-		foreach ( $this->remove_meta_boxes[$current_template] as $meta_box ) :
+		foreach ( $this->remove_meta_boxes[$context] as $meta_box ) :
 
-			remove_meta_box( $meta_box['id'], $meta_box['page'], $meta_box['context'] );
+			// Skip if wrong post type
+			if ( !in_array( $post_type, $meta_box['post_type'] ) )
+				continue;
+			
+			// Skip if there are no conditions
+			if ( !is_array( $meta_box['conditions'] ) || empty( $meta_box['conditions'] ) )
+				continue;
+
+			// Skip if conditions fail
+			$skip = FALSE;
+		
+			foreach ( $meta_box['conditions'] as $key => $value ) :
+
+				if ( 'template' == $key && $value != $this->get_template( $post->ID ) )
+					$skip = TRUE;
+				elseif ( 'post_format' == $key && $value != get_post_format( $post->ID ) ) 
+					$skip = TRUE;
+				elseif ( get_post_field( $key, $post->ID ) != $value )
+					$skip = TRUE;
+
+			endforeach;
+
+			if ( TRUE === $skip )
+				continue;
+
+			// Remove meta box
+			remove_meta_box( $meta_box['id'], $post_type, $context );
 
 		endforeach;
 
