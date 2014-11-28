@@ -18,7 +18,6 @@ Display meta boxes depending on the selected template
 ### Remove the post thumbnail meta box for the default page template
 
 <pre class="language-php"><code class="language-php">
-<?php
 // Get singleton instance
 $tpl = Template_Meta_Boxes::get_instance();
 
@@ -57,7 +56,6 @@ $tpl->remove_meta_box( array( 'post_parent' => 0 ), 'postimagediv', 'page' ); //
 $tpl->remove_meta_box( array( 'post_parent' => 0, 'post_author' => 1 ), 'postimagediv', array( 'page' ) ); // Remove author meta box on first level pages for author #1
 
 // Adding meta boxes works the same way as removing them
-?>
 </code></pre>
 
 ## FAQ
