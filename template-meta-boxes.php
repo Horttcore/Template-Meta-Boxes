@@ -131,7 +131,7 @@ class Template_Meta_Boxes
 
 		$template_name = ( $post->ID ) ? $this->get_template( $post->ID ) : 'default';
 
-		$this->remove_template_meta_boxes( $template_name);
+		$this->remove_template_meta_boxes( $template_name );
 		$this->add_template_meta_boxes( $template_name );
 
 	} // end do_meta_boxes
@@ -144,6 +144,8 @@ class Template_Meta_Boxes
 	 * @static
 	 * @access public
 	 * @return obj A single instance of this class.
+	 * @since v1.0
+	 * @author Ralf Hortt
 	 */
 	public static function get_instance() {
 
@@ -180,14 +182,15 @@ class Template_Meta_Boxes
 	 * @access public
 	 * @param str $template_name Template name
 	 * @param str $meta_box_id Meta Box ID
+	 * @param str $post_type Post type
 	 * @param str $context Context
 	 * @since v1.0
 	 * @author Ralf Hortt
 	 */
-	public function remove_meta_box( $template_name, $meta_box_id, $page, $context = 'advanced' )
+	public function remove_meta_box( $template_name, $meta_box_id, $post_type, $context = 'advanced' )
 	{
 
-		$this->remove_meta_boxes[$template_name][] = array( 'id' => $meta_box_id, 'page' => $page, 'context' => $context );
+		$this->remove_meta_boxes[$template_name][] = array( 'id' => $meta_box_id, 'page' => $post_type, 'context' => $context );
 
 	} // end remove_meta_box
 
